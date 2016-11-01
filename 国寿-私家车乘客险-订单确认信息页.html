@@ -1,0 +1,209 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>投保信息确认页</title>
+    <link rel="stylesheet" href="css/app-style.css" />
+
+</head>
+<body>
+<section class="detail-main">
+
+</section>
+<script id="productDetail" type="text/template7">
+    {{#productDetail}}
+    <section class="product-detail mb84">
+        <div class="model-item details-list">
+
+            <div class="detail-list-item">
+                <h2 class="detail-title">保障计划:{{productName}}</h2>
+                <ul class="detail-ul">
+                    {{#each productItemList}}
+                    <li>{{@key}}：{{this}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+
+            <div class="detail-list-item">
+                <h2 class="detail-title">投保人信息</h2>
+                <ul class="detail-ul">
+                    {{#each tbInfoList}}
+                    <li>{{@key}}：{{this}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+
+            <div class="detail-list-item">
+                <h2 class="detail-title">被保险人</h2>
+                <ul class="detail-ul">
+                    {{#each tbFirstInfo}}
+                    <li>{{@key}}：{{this}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+            <div class="detail-list-item">
+                <h2 class="detail-title">受益人信息</h2>
+                <ul class="detail-ul">
+                    {{#each beneficiary}}
+                    <li>{{@key}}：{{this}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+
+        </div>
+        <!--<div class="model-item thanks-write mb84">-->
+        <!--<div class="thanks-by-title">-->
+        <!--感谢他（她）-->
+        <!--</div>-->
+        <!--<div class="thanks-textarea">-->
+        <!--<textarea class="thanks-text"></textarea>-->
+        <!--</div>-->
+        <!--</div>-->
+        <div class="form-submit from-info-chicked">
+            <div class="pull-left">
+                <div class="tb-base-info">
+                    <span class="tb-tip-text"></span>
+                </div>
+                <div class="read-protocol read-active">已阅读<a href="javascript:;" class="open-protocol-link">声明与授权</a></div>
+            </div>
+            <div class="pull-right tb-submit-btn mr10">确定投保</div>
+        </div>
+    </section>
+    {{/productDetail}}
+</script>
+<script src="script/tbform-control.js"></script>
+<script src="script/app-bridge-addon.js"></script>
+<script type="text/javascript">
+    $(function () {
+        var productDetailDate={
+            "productDetail":[{
+                "productName":"私家车乘客险",
+                "productItemList":{
+                    "保险责任":"乘坐个人非营运车辆期间发生意外事故，导致身故、伤残、Ⅲ度烧伤",
+                    "承保时间":"次日生效（保障30天）",
+                    "保额":"12万元"
+                },
+                "tbInfoList":{
+                    "姓名":"${policy.holderName}",
+                    "证件类型":"身份证",
+                    "证件号码":"${policy.holderCardValue}",
+                    "出生日期":"${policy.holderBirthday}",
+                    "手机号码":"${policy.holderMobile}",
+                    "电子邮箱":"${policy.holderEmail}"
+                },
+                "tbFirstInfo":{
+                    "与投保人的关系":"本人",
+                    "被保险人姓名":"${policy.insuredName}"
+                },
+                "beneficiary":{"身故保证金受益人":"法定受益人"}
+            }]
+
+        };
+        var compiledTemplateModel = Template7.compile($("#productDetail").html());//文章路径数据
+        var ProductDetailHtml=compiledTemplateModel(productDetailDate);
+        $(".detail-main").append(ProductDetailHtml);
+
+        $(".tb-submit-btn").on("click", function () {
+            ajaxSave();
+        });
+
+        //协议
+
+        var productFormJson={
+            protocolJson:"protocol-file/protocol-2.JSON"
+        };
+        window.productFormJson=productFormJson;
+        $(".open-protocol-link").on("click", function () {
+            var openProtocol=new openDiogeControl({
+                openCategroy:"protocol",
+                protocol:productFormJson.protocolJson
+            });
+        });
+
+        $(".read-protocol").on("click", function (event) {
+            event.stopPropagation();
+            if($(this).hasClass("active")){
+                $(this).removeClass("active");
+                $(".tb-submit-btn").removeClass("disabled");
+            }else{
+                $(this).addClass("active");
+                $(".tb-submit-btn").addClass("disabled")
+            }
+        });
+
+        //B端控制
+        if (window.appBridge && appBridge.checkAppFeature('APP_VIEW')) {
+            $(".tb-tip-text").text("已使用优惠券");
+            return;
+        }else{
+            //c端控制
+            //文案不同
+            $(".tb-tip-text").text("保险费:免费赠送");
+
+            var thankHtml='<div class="model-item thanks-write"> <div class="thanks-by-title">感谢他（她） </div> ' +
+                    '<div class="thanks-textarea"> ' +
+                    '<textarea class="thanks-text"></textarea> ' +
+                    '</div> ' +
+                    '</div>';
+            $(".details-list").after(thankHtml);
+            //新增感谢
+            var thankTextDate=[
+                "人生处处有惊喜，再送一份行不行？",
+                "一份小小的保单，暖入心田，爱在心口难开。",
+                "世间所有的温柔，都抵不过一份保险的温暖。",
+                "我把你给我的保单，折起祝福的纸鹤，飞过千山万水，只为告诉你：谢谢你的馈赠。",
+                "今天是个好日子，心想的事儿都能成。",
+                "保险员是个帅锅，发的赠险酷酷哒。",
+                "保险员是个美铝，送的保险暖到家啦。",
+                "你是我的小啊小保单，怎么爱你都不嫌多。小小的保单贴呀贴心窝，一份两份都不嫌多。",
+                "保险那么暖，就像贴心的小棉袄。妈妈再也不用担心我怕冷了呢。",
+                "保险那么暖，就像贴心的小棉袄。弱弱地问一句，能不能再多给一件呢？！",
+                "自从收到了你的保险，我就像在漫漫的黑暗中见到了光明。叫我如何不感谢你?"
+            ];
+            var ThankIndex = Math.random()*(thankTextDate.length)|0;//随机选择数字
+            $("body").find(".thanks-text").html(thankTextDate[ThankIndex]);
+
+        }
+    });
+
+    function ajaxSave(){
+        $.ajax({
+            url  : "${ctx}/insure/product/confirm/ajaxSave",
+            type : "post",
+            timeout : 20000,
+            data:{"u":"${policy.uuid}","thanksWords":$(".thanks-text").html()},
+            dataType: "json",
+            success: function(result){
+                if(result.success){
+                    //正确页面跳转至订单完成页面
+                    window.location.href="${ctx}/insure/product/result?u=${policy.uuid}";
+                }else{
+                    var errorTip=new openDiogeControl({
+                        openCategroy:"notice",
+                        openNotice:{
+                            openNoticeText:result.info,
+                            openNoticeBtnText:"知道了"
+                        }
+                    });
+                }
+            },error : function(e) {
+                console.log(e)
+                //网络超时
+                var errorTip=new openDiogeControl({
+                    openCategroy:"change",
+                    openChange:{
+                        openChangeTitle:"网络超时",
+                        openChangeText:"",
+                        openChangeConfirmText:"重试",
+                        openChangeCancelText:"取消"
+                    },
+                    callBack: function () {}
+                });
+            }
+        });
+    }
+</script>
+</body>
+</html>
